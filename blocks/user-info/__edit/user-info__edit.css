@@ -1,0 +1,10 @@
+.user-info__edit {
+    position: relative;
+    margin: 20px 0 0 0;
+}
+
+@media screen and (max-width: 980px) {
+    .user-info__edit{
+        margin: 20px auto auto 0;  
+    }
+  }
