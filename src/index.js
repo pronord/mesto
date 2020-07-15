@@ -1,129 +1,138 @@
+import "./pages/index.css";
+import { Api } from './JS/Api.js';
+import { Card } from './JS/Card.js';
+import { CardList } from './JS/CardList.js';
+import { FormValidator } from './JS/FormValidator.js';
+import { Popup } from './JS/Popup.js';
+import { UserInfo } from './JS/UserInfo.js';
+
 (function() {
-  /** КОНСТАНТЫ */
+    /** КОНСТАНТЫ */
 
-  // контейнер карточек
-  const places = document.querySelector('.places-list');
-  // кнопки
-  const addButton = document.querySelector('.user-info__button');
-  const editButton = document.querySelector('.user-info__edit');
-  // попапы
-  const popupAddCard = document.getElementById('addCard');
-  const popupEditInfo = document.getElementById('editInfo');
-  const popupFullImage = document.querySelector('#fullImage');
-  // форма добавление карточки
-  const formAdd = document.forms.new;
-  const inputName = formAdd.elements.name;
-  const inputLink = formAdd.elements.link;
-  // форма редактирования информации о пользователе
-  const formEdit = document.forms.userInfo;
-  const inputUserName = formEdit.elements.userName;
-  const inputUserAbout = formEdit.elements.userAbout;
-  const userName = document.querySelector('.user-info__name');
-  const userAbout = document.querySelector('.user-info__job');
-  const userPhoto = document.querySelector('.user-info__photo');
-  //конфиг для API
-  const config = {
-    baseUrl: 'https://praktikum.tk/cohort11',
-    key: 'ab3768c2-28ea-4cee-ab0d-152a0b14a0dc'
-  }
- 
-
-  /** ИНСТАНСЫ */
-
-  // передача контейнеров для попапов
-  const popupAdd = new Popup(popupAddCard);
-  const popupEdit = new Popup(popupEditInfo);
-  const popupImage = new Popup(popupFullImage);
-
-  // валидация форм
-  const formValidationAdd = new FormValidator(formAdd)
-  const formValidationEdit = new FormValidator(formEdit)
-
-  // инстанс запросов к серверу
-  const api = new Api(config.baseUrl, config.key);
-
-  // данные для информации о пользователе
-  const userInfo = new UserInfo(userName, userAbout, userPhoto, api, popupEdit);
-
-  // контейнер карточек
-  const cardList = new CardList(places, createCard);
+    // контейнер карточек
+    const places = document.querySelector('.places-list');
+    // кнопки
+    const addButton = document.querySelector('.user-info__button');
+    const editButton = document.querySelector('.user-info__edit');
+    // попапы
+    const popupAddCard = document.getElementById('addCard');
+    const popupEditInfo = document.getElementById('editInfo');
+    const popupFullImage = document.querySelector('#fullImage');
+    // форма добавление карточки
+    const formAdd = document.forms.new;
+    const inputName = formAdd.elements.name;
+    const inputLink = formAdd.elements.link;
+    // форма редактирования информации о пользователе
+    const formEdit = document.forms.userInfo;
+    const inputUserName = formEdit.elements.userName;
+    const inputUserAbout = formEdit.elements.userAbout;
+    const userName = document.querySelector('.user-info__name');
+    const userAbout = document.querySelector('.user-info__job');
+    const userPhoto = document.querySelector('.user-info__photo');
+    //конфиг для API
+    const API_URL = NODE_ENV === 'production' ? 'https://praktikum.tk' : 'http://praktikum.tk';
+    const config = {
+        baseUrl: `${API_URL}/cohort11`,
+        key: 'ab3768c2-28ea-4cee-ab0d-152a0b14a0dc'
+    }
 
 
-  /** МЕТОДЫ КЛАССОВ */
+    /** ИНСТАНСЫ */
 
-  // создание списка карточек
-  api.getCards()
-  .then(res => {
-    cardList.render(res);
-  })
-  .catch(err => {
-    console.log('Ошибка. Запрос не выполнен: ', err);
-  })
- 
+    // передача контейнеров для попапов
+    const popupAdd = new Popup(popupAddCard);
+    const popupEdit = new Popup(popupEditInfo);
+    const popupImage = new Popup(popupFullImage);
 
-  // получение данных о пользователе с сервера
-  api.getUserInfo()
-  .then(res => {
-    userInfo.setUserInfo(res.name, res.about, res.avatar)
-    userInfo.updateRender()
-  })
-  .catch(err => {
-    console.log('Ошибка. Запрос не выполнен: ', err);
-  })
- 
+    // валидация форм
+    const formValidationAdd = new FormValidator(formAdd)
+    const formValidationEdit = new FormValidator(formEdit)
 
-  /** КОЛБЭКИ */
+    // инстанс запросов к серверу
+    const api = new Api(config.baseUrl, config.key);
 
-  // создаю колбэк, возвращающий разметку карточки
-  function createCard(name, link) {
-    return new Card(name, link, places, popupImage, popupFullImage).create();
-  }
+    // данные для информации о пользователе
+    const userInfo = new UserInfo(userName, userAbout, userPhoto, api, popupEdit);
+
+    // контейнер карточек
+    const cardList = new CardList(places, createCard);
 
 
-  //** СЛУШАТЕЛИ СОБЫТИЙ */
+    /** МЕТОДЫ КЛАССОВ */
 
-  // кнопка "+"
-  addButton.addEventListener('click', function () {
-    popupAdd.open();
-    formAdd.reset();
-    formValidationAdd.setSubmitButtonState(false);
-    formValidationAdd.clearErrors();
-  });
+    // создание списка карточек
+    api.getCards()
+        .then(res => {
+            cardList.render(res);
+        })
+        .catch(err => {
+            console.log('Ошибка. Запрос не выполнен: ', err);
+        })
 
-  // кнопка "edit"
-  editButton.addEventListener('click', function () {
-    popupEdit.open();
 
-    const getUserInfo = userInfo.getUserInfo();
+    // получение данных о пользователе с сервера
+    api.getUserInfo()
+        .then(res => {
+            userInfo.setUserInfo(res.name, res.about, res.avatar)
+            userInfo.updateRender()
+        })
+        .catch(err => {
+            console.log('Ошибка. Запрос не выполнен: ', err);
+        })
 
-    inputUserName.value = getUserInfo.name;
-    inputUserAbout.value = getUserInfo.job;
 
-    formValidationEdit.setSubmitButtonState(true);
-    formValidationEdit.clearErrors();
-  });
+    /** КОЛБЭКИ */
 
-  // слушатели для формы добавления карточки
-  formAdd.addEventListener('submit', (event) => {
-    event.preventDefault();
-      cardList.addCard(inputName.value, inputLink.value);
-      formAdd.reset();
-      popupAdd.close();
-  });
+    // создаю колбэк, возвращающий разметку карточки
+    function createCard(name, link) {
+        return new Card(name, link, places, popupImage, popupFullImage).create();
+    }
 
-  formAdd.addEventListener('input', (e) => {
-    formValidationAdd.setEventListeners(e);
-  }, true);
 
-  // слушатели для формы редактирования профиля
-  formEdit.addEventListener('submit', (event) => {
-    event.preventDefault();
-    userInfo.saveToServer(inputUserName.value, inputUserAbout.value);
-  });
+    //** СЛУШАТЕЛИ СОБЫТИЙ */
 
-  formEdit.addEventListener('input', (e) => {
-    formValidationEdit.setEventListeners(e)
-  }, true);
+    // кнопка "+"
+    addButton.addEventListener('click', function() {
+        popupAdd.open();
+        formAdd.reset();
+        formValidationAdd.setSubmitButtonState(false);
+        formValidationAdd.clearErrors();
+    });
+
+    // кнопка "edit"
+    editButton.addEventListener('click', function() {
+        popupEdit.open();
+
+        const getUserInfo = userInfo.getUserInfo();
+
+        inputUserName.value = getUserInfo.name;
+        inputUserAbout.value = getUserInfo.job;
+
+        formValidationEdit.setSubmitButtonState(true);
+        formValidationEdit.clearErrors();
+    });
+
+    // слушатели для формы добавления карточки
+    formAdd.addEventListener('submit', (event) => {
+        event.preventDefault();
+        cardList.addCard(inputName.value, inputLink.value);
+        formAdd.reset();
+        popupAdd.close();
+    });
+
+    formAdd.addEventListener('input', (e) => {
+        formValidationAdd.setEventListeners(e);
+    }, true);
+
+    // слушатели для формы редактирования профиля
+    formEdit.addEventListener('submit', (event) => {
+        event.preventDefault();
+        userInfo.saveToServer(inputUserName.value, inputUserAbout.value);
+    });
+
+    formEdit.addEventListener('input', (e) => {
+        formValidationEdit.setEventListeners(e)
+    }, true);
 })()
 
 
